@@ -5,6 +5,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 
 import { globalApiHandler } from "./middlewares/globalError.middleware.js";
+import { rateLimiter } from "./middlewares/rateLimit.middleware.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.urlencoded({ extended: true }))
+app.use(rateLimiter)
 
 // routes
 

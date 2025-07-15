@@ -196,7 +196,7 @@ async function searchQuestions(req, res, next) {
         }
 
         if (keyword) {
-            query.$text = { $search: keyword } // ✅ fixed typo
+            query.$text = { $search: keyword }
         }
 
         let sortOption = {}
@@ -219,7 +219,15 @@ async function searchQuestions(req, res, next) {
                         author: 1,
                         createdAt: 1
                     }
-                    : {}
+                    : {
+                        title: 1,
+                        body: 1,
+                        tags: 1,
+                        upvotes: 1,
+                        downvotes: 1,
+                        author: 1,
+                        createdAt: 1
+                    }
             )
 
         const total = await Question.countDocuments(query)

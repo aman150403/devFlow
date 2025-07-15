@@ -59,7 +59,7 @@ async function deactivateUser(req, res, next) {
     }
 }
 
-const deleteAnswer = async (req, res, next) => {
+async function deleteAnswer(req, res, next) {
     try {
         const { id } = req.params;
 
@@ -73,7 +73,7 @@ const deleteAnswer = async (req, res, next) => {
     }
 }
 
-const deleteQuestion = async (req, res, next) => {
+async function deleteQuestion(req, res, next) {
     try {
         const { id } = req.params;
 
@@ -87,7 +87,7 @@ const deleteQuestion = async (req, res, next) => {
     }
 }
 
-const deleteComment = async (req, res, next) => {
+async function deleteComment(req, res, next) {
     try {
         const { id } = req.params;
 
