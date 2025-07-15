@@ -24,6 +24,6 @@ const answerSchema = new Schema(
     }
 )
 
-const Answer = model(answerSchema, 'Answer');
+const Answer = model('Answer', answerSchema);
 
 export { Answer };
