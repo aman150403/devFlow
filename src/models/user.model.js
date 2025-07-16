@@ -29,7 +29,7 @@ const userSchema = new Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
 })
 
 userSchema.pre('save', async function (next) {

@@ -3,7 +3,7 @@ import { Router } from "express";
 import { protect, restrictTo } from '../middlewares/auth.middleware.js'
 import {
     deactivateUser,
-    chnageUserRole,
+    changeUserRole,
     deleteAnswer,
     deleteComment,
     deleteQuestion,
@@ -12,7 +12,7 @@ import {
 
 const adminRouter = Router()
 
-adminRouter.patch('/user/role/:id', protect, restrictTo('admin'), chnageUserRole);
+adminRouter.patch('/user/role/:id', protect, restrictTo('admin'), changeUserRole);
 adminRouter.patch('/user/:id/deactivate', protect, restrictTo('admin'), deactivateUser);
 adminRouter.get('/all-users', protect, restrictTo('admin'), getAllUsers);
 adminRouter.delete('/question/:id', protect, restrictTo('admin', 'moderator'), deleteQuestion);

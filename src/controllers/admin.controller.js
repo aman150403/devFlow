@@ -4,7 +4,7 @@ import { Answer } from '../models/answer.model.js';
 import { Comment } from '../models/comment.model.js';
 import { ApiError } from "../utils/ApiError.js"
 
-async function chnageUserRole(req, res, next) {
+async function changeUserRole(req, res, next) {
     try {
         const userId = req.params.id
         const { role } = req.body
@@ -129,7 +129,7 @@ async function getAllUsers(req, res, next) {
 }
 
 export {
-    chnageUserRole,
+    changeUserRole,
     deactivateUser,
     deleteAnswer,
     deleteComment,
