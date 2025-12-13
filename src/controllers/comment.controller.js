@@ -1,7 +1,7 @@
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
-export async function createComment(req, res, next) {
+async function createComment(req, res, next) {
   try {
     const { content, parentId, questionId, answerId } = req.body;
 
@@ -38,7 +38,7 @@ export async function createComment(req, res, next) {
   }
 }
 
-export async function updateComment(req, res, next) {
+async function updateComment(req, res, next) {
   try {
     const { updatedContent } = req.body;
     const id = req.params.id;
@@ -70,7 +70,7 @@ export async function updateComment(req, res, next) {
   }
 }
 
-export async function deleteComment(req, res, next) {
+async function deleteComment(req, res, next) {
   try {
     const id = req.params.id;
 
@@ -96,7 +96,7 @@ export async function deleteComment(req, res, next) {
   }
 }
 
-export async function getComment(req, res, next) {
+async function getComment(req, res, next) {
   try {
     const id = req.params.id;
 
@@ -115,7 +115,7 @@ export async function getComment(req, res, next) {
   }
 }
 
-export async function getCommentByQuestion(req, res, next) {
+async function getCommentByQuestion(req, res, next) {
   try {
     const questionId = req.params.id;
 
@@ -139,7 +139,7 @@ export async function getCommentByQuestion(req, res, next) {
   }
 }
 
-export async function getCommentByAnswer(req, res, next) {
+async function getCommentByAnswer(req, res, next) {
   try {
     const answerId = req.params.id;
 

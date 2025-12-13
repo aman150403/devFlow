@@ -6,11 +6,11 @@ import {
   getQuestionsByTags
 } from '../controllers/tag.controller.js'
 
-const router = express.Router()
+const tagRouter = express.Router()
 
-router.get('/', getAllTags) 
-router.get('/popular', getPopularTags)
-router.get('/search', autocompleteTags)
-router.get('/:tagName/questions', getQuestionsByTags);
+tagRouter.get('/', getAllTags) 
+tagRouter.get('/popular', getPopularTags)
+tagRouter.get('/search', autocompleteTags)
+tagRouter.get('/:tagName/questions', getQuestionsByTags);
 
-export { router }
+export { tagRouter }

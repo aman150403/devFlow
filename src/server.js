@@ -5,6 +5,7 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from "socket.io";
 
 import dotenv from 'dotenv';
+import { Router } from "express";
 dotenv.config();
 
 const httpServer = createServer(app);
@@ -32,6 +33,12 @@ io.on('connection', (socket) => {
     })
 })
 
+app.get('/', (req, res) => {
+    return res.status(200).json({
+        success: true,
+        mesasge: "🚀 DevFlow API is running"
+    })
+})
 
 httpServer.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
