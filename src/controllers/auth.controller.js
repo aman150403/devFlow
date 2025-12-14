@@ -47,44 +47,48 @@ async function registerUser(req, res, next) {
 async function loginUser(req, res, next) {
     try {
         const { email, password } = req.body;
+
         if (!email || !password) {
-            next(new ApiError(400, 'All the fields are required'))
+            return next(new ApiError(400, 'All the fields are required'));
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+password');
         if (!user) {
-            next(new ApiError(404, 'User not found'))
+            return next(new ApiError(404, 'User not found'));
         }
 
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            next(new ApiError(400, 'Invalid credentials'))
+            return next(new ApiError(400, 'Invalid credentials'));
         }
 
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
 
-        const loggedInUser = await User.findOne({ email }).select('-password')
+        const loggedInUser = await User.findById(user._id).select('-password');
 
         const options = {
             httpOnly: true,
-            secure: true
-        }
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        };
 
         return res
             .status(200)
             .cookie('refreshToken', refreshToken, options)
             .cookie('accessToken', accessToken, options)
             .json({
-                message: 'User loggedin successfully',
+                message: 'User logged in successfully',
                 success: true,
                 loggedInUser
-            })
+            });
+
     } catch (error) {
         console.error(error);
-        next(new ApiError(500, 'Internal Server Error'))
+        return next(new ApiError(500, 'Internal Server Error'));
     }
 }
+
 
 async function logoutUser(req, res, next) {
     try {

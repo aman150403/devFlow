@@ -12,11 +12,11 @@ import {
 
 const adminRouter = Router()
 
-adminRouter.patch('/user/role/:id', protect, restrictTo('admin'), changeUserRole);
-adminRouter.patch('/user/:id/deactivate', protect, restrictTo('admin'), deactivateUser);
-adminRouter.get('/all-users', protect, restrictTo('admin'), getAllUsers);
-adminRouter.delete('/question/:id', protect, restrictTo('admin', 'moderator'), deleteQuestion);
-adminRouter.delete('/answer/:id', protect, restrictTo('admin', 'moderator'), deleteAnswer);
-adminRouter.delete('/comment/:id', protect, restrictTo('admin', 'moderator'), deleteComment);
+adminRouter.patch('/user/role/:id', protect, restrictTo('Admin'), changeUserRole);
+adminRouter.patch('/user/:id/deactivate', protect, restrictTo('Admin'), deactivateUser);
+adminRouter.get('/all-users', protect, restrictTo('Admin'), getAllUsers);
+adminRouter.delete('/question/:id', protect, restrictTo('Admin', 'Moderator'), deleteQuestion);
+adminRouter.delete('/answer/:id', protect, restrictTo('Admin', 'Moderator'), deleteAnswer);
+adminRouter.delete('/comment/:id', protect, restrictTo('Admin', 'Moderator'), deleteComment);
 
 export { adminRouter }; 

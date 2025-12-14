@@ -9,12 +9,12 @@ async function changeUserRole(req, res, next) {
         const userId = req.params.id
         const { role } = req.body
 
-        if (!['admin', 'user', 'moderator'].includes(role)) {
+        if (!['Admin', 'User', 'Moderator'].includes(role)) {
             return next(new ApiError(500, 'Invalid user role'))
         }
 
         const user = await User.findByIdAndUpdate(
-            id,
+            userId,
             { role: role },
             { new: true }
         ).select('password')
@@ -39,7 +39,7 @@ async function deactivateUser(req, res, next) {
         const userId = req.params.id
 
         const user = await User.findByIdAndUpdate(
-            id,
+            userId,
             { isActive: false },
             { new: true }
         ).select('password')
@@ -104,7 +104,7 @@ async function deleteComment(req, res, next) {
 async function getAllUsers(req, res, next) {
     const page = Number(req.query?.page) || 1
     const limit = Number(req.query?.limit) || 10
-    const skip = Number(page - 1) * limiti
+    const skip = Number(page - 1) * limit
 
     const allUsers = await User.find({})
         .select('-password')
