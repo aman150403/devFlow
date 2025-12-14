@@ -14,8 +14,8 @@ const userRouter = Router();
 userRouter.get('/profile', protect, getUserProfile);
 userRouter.put('/update-profile', protect, updateUserProfile);
 userRouter.delete('/delete-profile', protect, deleteUserProfile);
-userRouter.get('/all-users', protect, restrictTo('admin'), getAllUsers);
+userRouter.get('/all-users', protect, restrictTo('Admin'), getAllUsers);
 userRouter.get('/public/:id', getPublicProfileStats);
-userRouter.get('/user-acativity/:id', protect, getUserActivity);
+userRouter.get('/user-activity/:id', protect, getUserActivity);
 
 export { userRouter }

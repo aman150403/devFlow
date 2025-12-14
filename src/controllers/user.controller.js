@@ -27,7 +27,7 @@ async function getUserProfile(req, res, next) {
 
 async function updateUserProfile(req, res, next) {
     try {
-        const fullName = req.body;
+        const { fullName } = req.body;
         if (!fullName) return next(new ApiError(400, 'Fullname is required'))
 
         const id = req.user.id;
@@ -40,7 +40,8 @@ async function updateUserProfile(req, res, next) {
                 }
             },
             {
-                new: true
+                new: true,
+                runValidators: true
             }
         ).select('-password')
 
