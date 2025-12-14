@@ -7,7 +7,7 @@ async function createQuestion(req, res, next) {
         const { title, body, tags = [] } = req.body;
         if (!title || !body) next(new ApiError(400, 'Both the fields are required'))
 
-        const cleanTags = handleTags(tags)
+        const cleanTags = await handleTags(tags)
 
         const newQuestion = await Question.create({
             title,
@@ -158,7 +158,7 @@ async function voteQuestion(req, res, next) {
 
         await question.save();
 
-        req.io.emit('question:voted', { id: question._id, upvotes: question.upvotes.length, downvotes: question.downvotes.length });
+        //req.io.emit('question:voted', { id: question._id, upvotes: question.upvotes.length, downvotes: question.downvotes.length });
 
         return res
             .status(200)
