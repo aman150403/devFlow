@@ -10,7 +10,7 @@ async function registerUser(req, res, next) {
         }
 
         const existingUser = await User.findOne({ email });
-        if (existing) {
+        if (existingUser) {
             next(new ApiError(409, 'Email already in use'))
         }
 
@@ -120,7 +120,7 @@ async function refreshAccessToken(req, res, next) {
 
         if (!token) next(new ApiError(400, 'Refresh token is missing'))
 
-        const decodedToken = await verifyRefreshToken(refreshToken);
+        const decodedToken = await verifyRefreshToken(token);
 
         const user = await User.findById(decodedToken.id);
         if (!user) next(new ApiError(400, 'Inalid refresh token'))

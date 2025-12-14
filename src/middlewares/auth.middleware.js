@@ -17,7 +17,7 @@ const protect = async (req, res, next) => {
          const decoded = verifyAccessToken(token);
 
         // 3. Get user
-        const user = await User.findById(decodedToken.id).select("-password");
+        const user = await User.findById(decoded.id).select("-password");
 
         if (!user) {
             return next(new ApiError(401, "User not found"));
