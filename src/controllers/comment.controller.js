@@ -1,40 +1,82 @@
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import mongoose from "mongoose";
 
 async function createComment(req, res, next) {
   try {
     const { content, parentId, questionId, answerId } = req.body;
 
-    if (!content) return next(new ApiError(400, 'Content is required'));
-
-    let depth = 0;
-    if (parentId) {
-      const parent = await Comment.findById(parentId); // ❌ FIXED: incorrect usage of findById
-      if (!parent) return next(new ApiError(400, 'Parent comment not found'));
-      depth = parent.depth + 1;
-      if (depth > 2) return next(new ApiError(400, 'Maximum nesting level exceeded'));
+    // 1️⃣ Validate content
+    if (!content || !content.trim()) {
+      return next(new ApiError(400, "Content is required"));
     }
 
+    // 2️⃣ Ensure comment belongs to either a question OR an answer
+    if (!questionId && !answerId) {
+      return next(
+        new ApiError(400, "Comment must belong to a question or an answer")
+      );
+    }
+
+    if (questionId && answerId) {
+      return next(
+        new ApiError(400, "Comment cannot belong to both question and answer")
+      );
+    }
+
+    // 3️⃣ Validate ObjectIds
+    if (
+      (questionId && !mongoose.Types.ObjectId.isValid(questionId)) ||
+      (answerId && !mongoose.Types.ObjectId.isValid(answerId))
+    ) {
+      return next(new ApiError(400, "Invalid question or answer ID"));
+    }
+
+    let depth;
+
+    // 4️⃣ Handle nested comments
+    if (parentId) {
+      if (!mongoose.Types.ObjectId.isValid(parentId)) {
+        return next(new ApiError(400, "Invalid parent comment ID"));
+      }
+
+      const parentComment = await Comment.findById(parentId);
+      if (!parentComment) {
+        return next(new ApiError(400, "Parent comment not found"));
+      }
+
+      depth = parentComment.depth + 1;
+
+      // Max nesting level: 2
+      if (depth > 2) {
+        return next(
+          new ApiError(400, "Maximum nesting level exceeded")
+        );
+      }
+    }
+
+    // 5️⃣ Create comment
     const newComment = await Comment.create({
-      content,
+      content: content.trim(),
       author: req.user.id,
       parent: parentId || null,
       question: questionId || null,
       answer: answerId || null,
-      depth
+      depth // undefined for top-level → schema default (0)
     });
 
-    req.io?.emit('comment:created', newComment);
+    // 6️⃣ Emit real-time event (optional)
+    req.io?.emit("comment:created", newComment);
 
     return res.status(201).json({
-      message: 'Comment created successfully',
       success: true,
+      message: "Comment created successfully",
       comment: newComment
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    next(new ApiError(500, 'Internal server error'));
+    console.error("Error creating comment:", error);
+    next(new ApiError(500, "Internal server error"));
   }
 }
 
@@ -141,27 +183,33 @@ async function getCommentByQuestion(req, res, next) {
 
 async function getCommentByAnswer(req, res, next) {
   try {
-    const answerId = req.params.id;
+    const { id: answerId } = req.params;
+
+    // Optional but recommended: ObjectId validation
+    if (!mongoose.Types.ObjectId.isValid(answerId)) {
+      return next(new ApiError(400, "Invalid answer ID"));
+    }
 
     const answerComments = await Comment.find({ answer: answerId })
       .sort({ createdAt: -1 })
-      .populate('author', 'fullName email');
-
-    if (answerComments.length === 0) {
-      return next(new ApiError(404, 'No comments found for this answer'));
-    }
+      .populate("author", "fullName email");
 
     return res.status(200).json({
-      message: 'All comments fetched for this answer',
       success: true,
+      message:
+        answerComments.length === 0
+          ? "No comments yet for this answer"
+          : "Comments fetched successfully",
+      total: answerComments.length,
       comments: answerComments
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    next(new ApiError(500, 'Internal server error'));
+    console.error("Error:", error);
+    next(new ApiError(500, "Internal server error"));
   }
 }
+
 
 export {
     createComment,
