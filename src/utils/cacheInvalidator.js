@@ -1,6 +1,6 @@
-import redisClient from "./redis";
+import redisClient from "./redis.js"
 
-const invalidateByCache = async(prefix) => {
+const invalidateByPrefix = async(prefix) => {
     try{
         const keys = await redisClient.keys(prefix + "*")
         if(keys.length > 0){
@@ -12,3 +12,5 @@ const invalidateByCache = async(prefix) => {
             console.error("ERROR IN CACHE INVALIDATION:", err);
     }
 }
+
+export default invalidateByPrefix;

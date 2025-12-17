@@ -1,6 +1,6 @@
-import redisClient from "../utils/redis";
+import redisClient from "../utils/redis.js";
 
-const csche = (keyPrefix, ttl = 60) => {
+const cache = (keyPrefix, ttl = 60) => {
     return async(req, res, next) => {
         const key = keyPrefix + JSON.stringify(req.params) + JSON.stringify(req.query);
 
@@ -21,3 +21,5 @@ const csche = (keyPrefix, ttl = 60) => {
         next()
     }
 }
+
+export default cache; 

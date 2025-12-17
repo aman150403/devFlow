@@ -46,6 +46,7 @@ async function updateUserProfile(req, res, next) {
         ).select('-password')
 
         if (!user) return next(new ApiError(400, 'User not found'));
+        await invalidateByPrefix(`user:public:${id}`);
 
         return res
             .status(200)
@@ -68,6 +69,8 @@ async function deleteUserProfile(req, res, next) {
 
         if (!user) return next(new ApiError(400, 'User not found'))
 
+        await invalidateByPrefix(`user:public:${req.user.id}`);
+            
         return res
             .status(200)
             .json({

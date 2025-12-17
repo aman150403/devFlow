@@ -1,11 +1,11 @@
 import { createClient } from "redis"
 
 const redisClient = createClient({
-    url: "redis://localhost:6379"
+    url: "redis://127.0.0.1:6379"
 })
 
-redisClientw.on('error', err => console.log('Redis Client Error', err));
+redisClient.on('error', err => console.log('Redis Client Error', err));
 
-await client.connect();
+await redisClient.connect();
 
 export default redisClient;

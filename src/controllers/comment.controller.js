@@ -1,6 +1,7 @@
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
+import invalidateByPrefix from "../utils/cacheInvalidator.js"
 
 async function createComment(req, res, next) {
   try {
@@ -65,6 +66,14 @@ async function createComment(req, res, next) {
       depth // undefined for top-level → schema default (0)
     });
 
+    if (questionId) {
+      await invalidateByPrefix(`comments:question:${questionId}`);
+    }
+
+    if (answerId) {
+      await invalidateByPrefix(`comments:answer:${answerId}`);
+    }
+
     // 6️⃣ Emit real-time event (optional)
     req.io?.emit("comment:created", newComment);
 
@@ -100,6 +109,17 @@ async function updateComment(req, res, next) {
 
     req.io?.emit('comment:updated', comment);
 
+    await invalidateByPrefix(`comment:single:${id}`);
+
+    if (comment.question) {
+      await invalidateByPrefix(`comments:question:${comment.question}`);
+    }
+
+    if (comment.answer) {
+      await invalidateByPrefix(`comments:answer:${comment.answer}`);
+    }
+
+
     return res.status(200).json({
       message: 'Comment updated successfully',
       success: true,
@@ -126,6 +146,17 @@ async function deleteComment(req, res, next) {
     await comment.deleteOne();
 
     req.io?.emit('comment:deleted', { id });
+
+    await invalidateByPrefix(`comment:single:${id}`);
+
+    if (comment.question) {
+      await invalidateByPrefix(`comments:question:${comment.question}`);
+    }
+
+    if (comment.answer) {
+      await invalidateByPrefix(`comments:answer:${comment.answer}`);
+    }
+
 
     return res.status(200).json({
       message: 'Comment deleted successfully',
@@ -210,12 +241,11 @@ async function getCommentByAnswer(req, res, next) {
   }
 }
 
-
 export {
-    createComment,
-    updateComment,
-    deleteComment,
-    getComment,
-    getCommentByQuestion,
-    getCommentByAnswer
+  createComment,
+  updateComment,
+  deleteComment,
+  getComment,
+  getCommentByQuestion,
+  getCommentByAnswer
 }

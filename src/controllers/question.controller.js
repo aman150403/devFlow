@@ -1,6 +1,7 @@
 import { Question } from "../models/question.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { handleTags } from "../utils/tag.js";
+import invalidateByPrefix from "../utils/cacheInvalidator.js";
 
 async function createQuestion(req, res, next) {
     try {
@@ -17,6 +18,8 @@ async function createQuestion(req, res, next) {
         })
 
         if (!newQuestion) next(new ApiError(400, 'Question can not be posted'))
+        
+        await invalidateByPrefix('questions:all');
 
         return res
             .status(201)
@@ -99,6 +102,10 @@ async function updateQuestion(req, res, next) {
             return next(new ApiError(404, 'Question not found'));
         }
 
+        await invalidateByCache("questions:all");
+        await invalidateByCache(`question:single:${id}`);
+
+
         return res
             .status(200)
             .json({
@@ -119,6 +126,9 @@ async function deleteQuestion(req, res, next) {
         const deletedQuestion = await Question.findByIdAndDelete(id)
 
         if (!deleteQuestion) next(new ApiError(400, 'Question not found'))
+
+        await invalidateByCache("questions:all");
+        await invalidateByCache(`question:single:${id}`);
 
         return res
             .status(200)
@@ -159,7 +169,9 @@ async function voteQuestion(req, res, next) {
         await question.save();
 
         //req.io.emit('question:voted', { id: question._id, upvotes: question.upvotes.length, downvotes: question.downvotes.length });
-
+        await invalidateByCache("questions:all");
+        await invalidateByCache(`question:single:${id}`);
+        
         return res
             .status(200)
             .json({

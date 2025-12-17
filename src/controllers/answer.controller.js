@@ -1,24 +1,27 @@
 import { Answer } from "../models/answer.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
+import invalidateByPrefix from "../utils/cacheInvalidator.js";
 
 async function createAnswer(req, res, next) {
   try {
-    const { content, question } = req.body;
+    const { content, questionId } = req.body;
 
-    if (!content || !question) {
+    if (!content || !questionId) {
       return next(new ApiError(400, "Content and Question ID are required"));
     }
 
     const newAnswer = await Answer.create({
       content,
       author: req.user.id,
-      question
+      question: questionId
     });
 
     if (!newAnswer) {
       return next(new ApiError(400, "Answer cannot be posted"));
     }
+
+    await invalidateByPrefix(`answers:question:${questionId}`);
 
     return res.status(201).json({
       success: true,
@@ -108,6 +111,9 @@ async function updateAnswer(req, res, next) {
     answer.content = content;
     await answer.save();
 
+    await invalidateByPrefix(`answer:single:${answerId}`);
+    await invalidateByPrefix(`answers:question:${answer.question}`);
+
     return res.status(200).json({
       success: true,
       message: "Answer updated successfully",
@@ -123,12 +129,24 @@ async function deleteAnswer(req, res, next) {
   try {
     const id = req.params.id;
 
-    const deletedAnswer = await Answer.findByIdAndDelete(id);
-
-    if (!deletedAnswer) {
+    const answer = await Answer.findById(id);
+    if (!answer) {
       return next(new ApiError(404, "Answer not found"));
     }
 
+    if (
+      answer.author.toString() !== req.user.id &&
+      !req.user.role.includes("admin")
+    ) {
+      return next(new ApiError(403, "Not authorized"));
+    }
+
+    // delete
+    await Answer.findByIdAndDelete(id);
+
+    // invalidate caches
+    await invalidateByPrefix(`answer:single:${id}`);
+    await invalidateByPrefix(`answers:question:${answer.question}`);
     return res.status(200).json({
       success: true,
       message: "Answer deleted successfully",
@@ -149,16 +167,14 @@ async function voteAnswer(req, res, next) {
     }
 
     const answer = await Answer.findById(answerId);
-
     if (!answer) {
       return next(new ApiError(404, "Answer not found"));
     }
 
-    // Remove user from both arrays first (toggle vote)
-    answer.upvotes = answer.upvotes.filter((id) => id.toString() !== userId);
-    answer.downvotes = answer.downvotes.filter((id) => id.toString() !== userId);
+    // Toggle vote
+    answer.upvotes = answer.upvotes.filter(id => id.toString() !== userId);
+    answer.downvotes = answer.downvotes.filter(id => id.toString() !== userId);
 
-    // Then push user to selected vote array
     if (voteType === "upvote") {
       answer.upvotes.push(userId);
     } else {
@@ -167,7 +183,9 @@ async function voteAnswer(req, res, next) {
 
     await answer.save();
 
-    //req.io.emit('answer:voted', { id: answer._id, upvotes: answer.upvotes.length, downvotes: answer.downvotes.length });
+    // 🔥 Cache invalidation (IMPORTANT)
+    await invalidateByPrefix(`answer:single:${answerId}`);
+    await invalidateByPrefix(`answers:question:${answer.question}`);
 
     return res.status(200).json({
       success: true,
@@ -175,6 +193,7 @@ async function voteAnswer(req, res, next) {
       upvotes: answer.upvotes.length,
       downvotes: answer.downvotes.length,
     });
+
   } catch (error) {
     next(new ApiError(500, error.message, [error]));
   }
